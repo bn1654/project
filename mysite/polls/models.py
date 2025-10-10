@@ -3,6 +3,15 @@ import datetime
 from django.db import models
 from django.utils import timezone
 
+from django.contrib.auth.models import AbstractUser
+
+
+class PolUser(AbstractUser):
+    avatar = models.ImageField(verbose_name="Аватар")
+
+    class Meta(AbstractUser.Meta):
+        pass
+
 
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
