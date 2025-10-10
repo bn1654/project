@@ -31,3 +31,7 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.choice_text
+
+class ChoisedQuestions(models.Model):
+    user = models.ForeignKey(PolUser, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
