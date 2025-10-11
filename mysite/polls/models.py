@@ -3,11 +3,13 @@ import datetime
 from django.db import models
 from django.utils import timezone
 
+from .utilities import get_timstamp_path
+
 from django.contrib.auth.models import AbstractUser
 
 
 class PolUser(AbstractUser):
-    avatar = models.ImageField(verbose_name="Аватар")
+    avatar = models.ImageField(blank=True, upload_to=get_timstamp_path, verbose_name="Аватар")
 
     class Meta(AbstractUser.Meta):
         pass

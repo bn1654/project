@@ -1,13 +1,19 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Question, Choice
+from .models import Question, Choice, PolUser
 from django.template import loader
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import generic
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib.auth import logout
+from django.views.generic import UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
+from .forms import ChangeUserInfo, AvatarChangeForm
+from django.contrib import messages
+
 
 
 class IndexView(generic.ListView):
@@ -53,3 +59,59 @@ def profile(request):
 def logout_view(request):
     logout(request)
     return redirect('/')
+
+# Контроллер для изменения данных пользователя
+class ChangeUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
+    model = PolUser
+    template_name = 'polls/change_user_info.html'
+    form_class = ChangeUserInfo
+    success_url = reverse_lazy('polls:profile')
+    success_message = 'Личные данные пользователя изменены'
+    
+    def dispatch(self, request, *args, **kwargs):
+        self.user_id = request.user.pk
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        if not queryset:
+            queryset = self.get_queryset()
+        return get_object_or_404(queryset, pk=self.user_id)
+
+# Контроллер для изменения аватара
+@login_required
+def avatar_change(request):
+    instance = request.user
+    if request.method == 'POST':
+        form = AvatarChangeForm(request.POST, request.FILES, instance=instance)
+        if form.is_valid():
+            avatar = form.save()
+            return redirect('polls:profile')
+    else:
+        form = AvatarChangeForm(instance=instance)
+    context = {'form': form}
+    return render(request, 'polls/avatar_changing.html', context=context)
+
+class PollsPasswordChangeView(SuccessMessageMixin, LoginRequiredMixin, PasswordChangeView):
+    template_name = 'polls/password_change.html'
+    success_url = reverse_lazy('polls:profile')
+    success_message = 'Пароль успешно изменен'
+
+class DeleteUserView(LoginRequiredMixin, DeleteView):
+    model = PolUser
+    template_name = 'polls/delete_user.html'
+    success_url = reverse_lazy('polls:index')
+    
+    def dispatch(self, request, *args, **kwargs):
+        self.user_id = request.user.pk
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        logout(request)
+        messages.add_message(request, messages.SUCCESS, 'Пользователь успешно удален')
+        return super().post(request, *args, **kwargs)
+        
+    def get_object(self, queryset=None):
+        if not queryset:
+            queryset = self.get_queryset()
+        return get_object_or_404(queryset, pk=self.user_id)
+    

@@ -12,9 +12,11 @@
 </head>
 <body>
 <div class="container-fluid">
-    <div class="d-flex flex-column flex-md-row p-3 px-md-4 mb-3 bg-white border-bottom boxshadow">
-        <h5 class="mr-md-auto p-2">Электронная доска Голосований</h5>
-        
+    <div class="d-flex justify-content-between p-3 px-md-4 mb-3 bg-white border-bottom boxshadow">
+        <div class="d-flex justify-content-between">
+        <h5 class="mr-3 mb-0 text-center">Электронная доска Голосований</h5>
+        <a class="p-2 text-dark" href="{% url "polls:index" %}">Главная</a>
+        </div>
         <div class="d-flex justify-content-end">
             {% if user.is_authenticated %}
                 <a class="p-2 text-dark" href="{% url "polls:profile" %}">Профиль</a>

@@ -2,10 +2,24 @@
 {% load bootstrap4 %}
 {% block title %} Профиль пользователя {% endblock %}
 {% block content %}
+    <div class="row flex-nowrap">
+    {% if user.avatar %}
+        <div class="w-50 mr-5">
+        <img src="{{ user.avatar.url }}" class="img-fluid">
+        </div>
+    {% endif %}
+    <div>
     <h2>Профиль пользователя {{ user.username }}</h2>
     {% if user.first_name and user.last_name %}
         <p>Здравствуйте, {{ user.first_name }} {{ user.last_name }} </p>
     {% else %}
         <p>Здравствуйте! </p>
     {% endif %}
+
+    <a class="dropdown-item" href="{% url 'polls:profile_change' %}">Изменить личные данные</a>
+    <a class="dropdown-item" href="{% url 'polls:avatar_change' %}">Изменить аватар пользователя</a>
+    <a class="dropdown-item" href="{% url 'polls:password_change' %}">Изменить пароль</a>
+    <a class="dropdown-item" href="{% url 'polls:user_delete' %}">Удалить профиль</a>
+    </div>
+    </div>
 {% endblock %}
