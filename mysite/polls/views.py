@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Question, Choice, PolUser
+from .models import Question, Choice, PolUser, ChoisedQuestions
 from django.template import loader
 from django.urls import reverse, reverse_lazy
 from django.views import generic
@@ -13,7 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from .forms import ChangeUserInfo, AvatarChangeForm, RegisterUserForm
 from django.contrib import messages
-
+from django.db.utils import IntegrityError
 
 
 class IndexView(generic.ListView):
@@ -33,11 +33,14 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
-
+@login_required
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
+    user_ = get_object_or_404(PolUser, username=request.user)
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
+        chosed_question = ChoisedQuestions(user=user_, question=question)
+        
     except (KeyError, Choice.DoesNotExist):
         return render(request, 'polls/detail.html', {
             'question': question,
@@ -45,8 +48,19 @@ def vote(request, question_id):
         })
     else:
         selected_choice.votes += 1
-        selected_choice.save()
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+        
+        try:
+            chosed_question.save()
+        except IntegrityError:
+            return render(request, 'polls/results.html', {
+                'question': question,
+                'error_message': 'вы уже делали выбор по этому вопросу'
+            })
+        else:
+            selected_choice.save()
+            return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
+
 
 
 class PollsLogin(LoginView):

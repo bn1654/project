@@ -37,3 +37,6 @@ class Choice(models.Model):
 class ChoisedQuestions(models.Model):
     user = models.ForeignKey(PolUser, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = (('user', 'question'),)
