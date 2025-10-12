@@ -22,7 +22,7 @@
                 <a class="p-2 text-dark" href="{% url "polls:profile" %}">Профиль</a>
                 <a class="p-2 text-dark" href="{% url "polls:logout" %}">Выйти</a>
             {% else %}
-                <a class="p-2 text-dark" href="#">Регистрация</a>
+                <a class="p-2 text-dark" href="{% url "polls:registration" %}">Регистрация</a>
                 <a class="p-2 text-dark" href="{% url "polls:login" %}">Вход</a>
             {% endif %}
         </div>

@@ -8,10 +8,10 @@ from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib.auth import logout
-from django.views.generic import UpdateView, DeleteView
+from django.views.generic import UpdateView, DeleteView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from .forms import ChangeUserInfo, AvatarChangeForm
+from .forms import ChangeUserInfo, AvatarChangeForm, RegisterUserForm
 from django.contrib import messages
 
 
@@ -51,7 +51,28 @@ def vote(request, question_id):
 
 class PollsLogin(LoginView):
     template_name = 'polls/login.html'
+
+
+class RegisterUserView(SuccessMessageMixin, CreateView):
+    model = PolUser
+    template_name = 'polls/registration.html'
+    form_class = RegisterUserForm
+    success_url = reverse_lazy('polls:index')
+    success_message = 'Пользователь зарегестрирован, можете войти'
     
+    def form_valid(self, form):
+        self.object = form.save()
+        return super().form_valid(form)
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.request.method in ('POST', 'PUT'):
+            kwargs.update({
+                'data': self.request.POST,
+                'files': self.request.FILES
+            })
+        return kwargs
+   
 @login_required
 def profile(request):
     return render(request, 'polls/profile.html')
