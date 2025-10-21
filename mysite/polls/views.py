@@ -15,12 +15,14 @@ from .forms import ChangeUserInfo, AvatarChangeForm, RegisterUserForm
 from django.contrib import messages
 from django.db.utils import IntegrityError
 
-
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
     context_object_name = 'latest_question_list'
 
     def get_queryset(self):
+        
+        
+        
         return Question.objects.order_by('-pub_date')
 
 
@@ -40,6 +42,7 @@ def vote(request, question_id):
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
         chosed_question = ChoisedQuestions(user=user_, question=question)
+        Choises = Choice.objects.filter(question=question)
         
     except (KeyError, Choice.DoesNotExist):
         return render(request, 'polls/detail.html', {
@@ -48,17 +51,30 @@ def vote(request, question_id):
         })
     else:
         selected_choice.votes += 1
+        summ = 0
+        for i in Choises:
+            summ += i.votes
+        persentage = []
         
         try:
             chosed_question.save()
         except IntegrityError:
+            for i in Choises:
+                persentage.append([i, (i.votes / (summ if summ != 0 else 1)) * 100])
             return render(request, 'polls/results.html', {
-                'question': question,
-                'error_message': 'вы уже делали выбор по этому вопросу'
+                'error_message': 'вы уже делали выбор по этому вопросу',
+                "choise_sum": summ,
+                "persentage": persentage,
             })
         else:
+            summ += 1
+            for i in Choises:
+                persentage.append([i, (i.votes / (summ if summ != 0 else 1)) * 100])
             selected_choice.save()
-            return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+            return render(request, 'polls/results.html', context={
+                "choise_sum": summ,
+                "persentage": persentage,
+                }) 
 
 
 

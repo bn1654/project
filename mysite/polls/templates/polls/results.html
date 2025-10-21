@@ -3,8 +3,16 @@
 <h1>{{ question.question_text }}</h1>
 {% if error_message %}<p><strong> {{error_message}}</strong></p>{% endif %}
 <ul>
-    {% for choice in question.choice_set.all %}
-    <li>{{ choice.choice_text }} -- {{ choice.votes }} vote{{choice.votes|pluralize}}</li>
+    <li>Всего ответов: {{ choise_sum }}</li>
+    {% for per in persentage %}
+    {% for i in per%}
+        {% if i.choice_text %}
+        <li>{{ i.choice_text }} -- 
+        {%else%}
+        {{ i }} %{{choice.votes|pluralize}}
+        {%endif%}
+    {% endfor %}
+    </li>
     {% endfor %}
 </ul>
 <a href="{% url 'polls:index' %}">Перейти к другим вопросам </a>

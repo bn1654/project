@@ -3,7 +3,11 @@
 {% if latest_question_list %}
 <ul>
     {% for question in latest_question_list %}
-    <li><a href="{% url 'polls:detail' question.id %}">{{question.question_text}}</a> </li>
+        {% if question.was_expired and user.is_authenticated%}
+        <li><a href="{% url 'polls:detail' question.id %}">{{question.question_text}}</a> (Скрыт) </li>
+        {% elif not question.was_expired %}
+        <li><a href="{% url 'polls:detail' question.id %}">{{question.question_text}}</a></li>
+        {% endif %}
     {% endfor %}
 </ul>
     {% else %}
