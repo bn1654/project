@@ -1,10 +1,25 @@
 from django import forms
-from .models import PolUser
+from django.forms import inlineformset_factory
+from .models import PolUser, Question, Choice
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 
 
+class CreatePoll(forms.ModelForm):
+    question_text = forms.CharField(label='Вопрос', required=True)
+    
+    def save(self, commit = True):
+            question = super().save(commit=False)
+            question.short_description_former()
+            if commit:
+                question.save()
+            return question
+    
+    class Meta:
+            model = Question
+            fields = ['question_text', 'description', 'image',]
 
+ChoiceFormSet = inlineformset_factory(Question, Choice, fields=['choice_text'])
 
 class RegisterUserForm(forms.ModelForm):
         email = forms.EmailField(required=True, label='Адрес электронной почты')

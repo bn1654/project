@@ -1,10 +1,16 @@
 {% extends "layout/basic.html" %}
 {% block content %}
 <form action="{% url 'polls:vote' question.id %}" method="post">
+    {% if question.image %}
+        <div class="w-50 mr-5">
+            <img src="{{ question.image.url }}" class="img-fluid">
+        </div>
+    {% endif %}
     {% csrf_token %}
     <fieldset>
         <legend>
             <h1>{{question.question_text}}</h1>
+            <p> {{question.description}} </p>
         </legend>
         {% if error_message %}<p><strong> {{error_message}}</strong></p>{% endif %}
         {% for choice in question.choice_set.all %}

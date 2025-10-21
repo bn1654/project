@@ -11,7 +11,7 @@ from django.contrib.auth import logout
 from django.views.generic import UpdateView, DeleteView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from .forms import ChangeUserInfo, AvatarChangeForm, RegisterUserForm
+from .forms import ChangeUserInfo, AvatarChangeForm, RegisterUserForm, CreatePoll, ChoiceFormSet
 from django.contrib import messages
 from django.db.utils import IntegrityError
 
@@ -43,7 +43,7 @@ def vote(request, question_id):
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
         chosed_question = ChoisedQuestions(user=user_, question=question)
         Choises = Choice.objects.filter(question=question)
-        
+        votes = selected_choice.votes
     except (KeyError, Choice.DoesNotExist):
         return render(request, 'polls/detail.html', {
             'question': question,
@@ -68,9 +68,9 @@ def vote(request, question_id):
             })
         else:
             summ += 1
-            for i in Choises:
-                persentage.append([i, (i.votes / (summ if summ != 0 else 1)) * 100])
             selected_choice.save()
+            for i in Choises:
+                persentage.append([i, ((i.votes + 1 if i == selected_choice else i.votes) / summ) * 100])
             return render(request, 'polls/results.html', context={
                 "choise_sum": summ,
                 "persentage": persentage,
@@ -165,4 +165,19 @@ class DeleteUserView(LoginRequiredMixin, DeleteView):
         if not queryset:
             queryset = self.get_queryset()
         return get_object_or_404(queryset, pk=self.user_id)
-    
+
+@login_required
+def create_poll(request):
+    if request.method == 'POST':
+        form = CreatePoll(request.POST, request.FILES)
+        if form.is_valid():
+            poll = form.save()
+            formset = ChoiceFormSet(request.POST, instance=poll)
+            if formset.is_valid():
+                formset.save()
+                return redirect('polls:index')
+    else:
+        form = CreatePoll()
+        formset = ChoiceFormSet()
+    context = {'form': form, 'formset': formset}
+    return render(request, 'polls/poll_create.html', context=context)
