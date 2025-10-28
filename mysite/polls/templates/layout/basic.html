@@ -16,6 +16,7 @@
         <div class="d-flex justify-content-between">
         <h5 class="mr-3 mb-0 text-center">Электронная доска Голосований</h5>
         <a class="p-2 text-dark" href="{% url "polls:index" %}">Главная</a>
+        <a class="p-2 text-dark" href="{% url "polls:poll_create" %}">Создать голосование</a>
         </div>
         <div class="d-flex justify-content-end">
             {% if user.is_authenticated %}
